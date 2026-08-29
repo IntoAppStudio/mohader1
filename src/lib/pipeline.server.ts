@@ -399,7 +399,7 @@ export async function buildCourseContent(supabase: Db, userId: string, courseId:
     .from("progress")
     .upsert(
       { user_id: userId, course_id: courseId, lessons_total: lessonPosition },
-      { onConflict: "user_id,course_id" },
+      { onConflict: "course_id" },
     );
 
   return { lessons: lessonPosition, questions: questionCount, references: references.length };
