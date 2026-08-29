@@ -80,7 +80,7 @@ export async function refreshProgress(supabase: Db, userId: string, courseId: st
       questions_correct: correct,
       updated_at: new Date().toISOString(),
     },
-    { onConflict: "user_id,course_id" },
+    { onConflict: "course_id" },
   );
 }
 

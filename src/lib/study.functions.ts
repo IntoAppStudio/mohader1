@@ -422,7 +422,7 @@ export const logStudySession = createServerFn({ method: "POST" })
         study_seconds: (current?.study_seconds ?? 0) + Math.round(data.seconds),
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "user_id,course_id" },
+      { onConflict: "course_id" },
     );
     return { ok: true };
   });
