@@ -23,7 +23,7 @@ export function AppShell({
   actions?: ReactNode;
 }) {
   const { t, lang, setLang } = useI18n();
-  const { resolved, setTheme } = useTheme();
+  const { resolved, setMode } = useTheme();
   const navigate = useNavigate();
 
   const signOut = async () => {
@@ -61,7 +61,7 @@ export function AppShell({
             variant="ghost"
             size="sm"
             className="w-full justify-start"
-            onClick={() => setTheme(resolved === "dark" ? "light" : "dark")}
+            onClick={() => setMode(resolved === "dark" ? "light" : "dark")}
           >
             {resolved === "dark" ? <Sun className="size-4" aria-hidden="true" /> : <Moon className="size-4" aria-hidden="true" />}
             {resolved === "dark" ? t("common.light") : t("common.dark")}
