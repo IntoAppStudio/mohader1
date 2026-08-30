@@ -14,8 +14,9 @@ export type SourceRef = {
 
 /** "Where did this come from": file, page, section and the original wording. */
 export function SourceRefs({ refs }: { refs: SourceRef[] }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   if (refs.length === 0) return null;
+  const pageLabel = lang === "ar" ? "صفحة" : "page";
 
   return (
     <Popover>
@@ -31,7 +32,7 @@ export function SourceRefs({ refs }: { refs: SourceRef[] }) {
             <li key={ref.id} className="border-b border-border pb-3 last:border-0 last:pb-0">
               <p className="text-xs font-medium text-foreground">
                 {ref.files?.original_name ?? "—"}
-                {ref.page ? ` · ${t("sources.page") === "sources.page" ? "" : ""}${ref.page}` : ""}
+                {ref.page ? ` · ${pageLabel} ${ref.page}` : ""}
               </p>
               {ref.section ? <p className="text-xs text-muted-foreground">{ref.section}</p> : null}
               {ref.quoted_text ? (
