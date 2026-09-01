@@ -115,7 +115,7 @@ function ExamPage() {
             const question = item.questions;
             if (!question) return null;
             const options = Array.isArray(question.options) ? (question.options as string[]) : [];
-            const value = done ? (item.answer ?? "") : (answers[question.id] ?? "");
+            const value = done ? String(item.answer ?? "") : (answers[question.id] ?? "");
             return (
               <li key={item.id} className="rounded-lg border border-border bg-card p-4">
                 <p className="text-sm font-medium">

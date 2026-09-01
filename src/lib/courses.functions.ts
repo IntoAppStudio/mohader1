@@ -92,11 +92,11 @@ export const updateCourse = createServerFn({ method: "POST" })
     const { supabase } = context;
     const { assertCourseOwner } = await import("./db.server");
     await assertCourseOwner(supabase, data.courseId);
-    const patch: Record<string, unknown> = {};
-    if (data.title !== undefined) patch["title"] = data.title.trim();
-    if (data.subject !== undefined) patch["subject"] = data.subject;
-    if (data.description !== undefined) patch["description"] = data.description;
-    if (data.examDate !== undefined) patch["exam_date"] = data.examDate;
+    const patch: { title?: string; subject?: string | null; description?: string | null; exam_date?: string | null } = {};
+    if (data.title !== undefined) patch.title = data.title.trim();
+    if (data.subject !== undefined) patch.subject = data.subject;
+    if (data.description !== undefined) patch.description = data.description;
+    if (data.examDate !== undefined) patch.exam_date = data.examDate;
     const { error } = await supabase.from("courses").update(patch).eq("id", data.courseId);
     if (error) throw new Error("COURSE_UPDATE_FAILED");
     return { ok: true };
