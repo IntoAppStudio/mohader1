@@ -83,13 +83,8 @@ function AuthPage() {
     }
   };
 
-  const google = async () => {
-    try {
-      await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : t("common.error"));
-    }
-  };
+
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-surface px-4 py-10">
