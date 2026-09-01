@@ -255,6 +255,7 @@ export const dict: Dict = {
   },
   "settings.saved": { ar: "تم الحفظ.", en: "Saved." },
   "settings.dangerZone": { ar: "حذف الحساب", en: "Delete account" },
+  "settings.export": { ar: "تصدير كل محتواي", en: "Export all my content" },
 
   "nav.dashboard": { ar: "لوحة الدراسة", en: "Study board" },
 
