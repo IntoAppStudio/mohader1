@@ -6,10 +6,10 @@ export const updateProfile = createServerFn({ method: "POST" })
   .inputValidator((data: { fullName?: string; language?: string; theme?: string }) => data)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const patch: Record<string, unknown> = {};
-    if (data.fullName !== undefined) patch["full_name"] = data.fullName.trim() || null;
-    if (data.language === "ar" || data.language === "en") patch["language"] = data.language;
-    if (data.theme && ["light", "dark", "system"].includes(data.theme)) patch["theme"] = data.theme;
+    const patch: { full_name?: string | null; language?: string; theme?: string } = {};
+    if (data.fullName !== undefined) patch.full_name = data.fullName.trim() || null;
+    if (data.language === "ar" || data.language === "en") patch.language = data.language;
+    if (data.theme && ["light", "dark", "system"].includes(data.theme)) patch.theme = data.theme;
     const { error } = await supabase.from("profiles").update(patch).eq("id", userId);
     if (error) throw new Error("PROFILE_UPDATE_FAILED");
     return { ok: true };

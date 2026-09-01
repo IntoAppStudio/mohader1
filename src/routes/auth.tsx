@@ -7,7 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/hooks/use-auth";
 import { useI18n } from "@/lib/i18n";
 
@@ -26,9 +25,8 @@ export const Route = createFileRoute("/auth")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    mode: search["mode"] === "signup" ? ("signup" as const) : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { mode?: "signup" } =>
+    search["mode"] === "signup" ? { mode: "signup" } : {},
   component: AuthPage,
 });
 
