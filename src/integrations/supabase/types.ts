@@ -659,51 +659,66 @@ export type Database = {
       lessons: {
         Row: {
           chapter_id: string | null
+          content_language: string | null
           course_id: string
           created_at: string
           explanation_detailed: string | null
           explanation_simple: string | null
           explanation_standard: string | null
+          figures: Json
+          formulas: Json
           id: string
           is_completed: boolean
           objective: string | null
           position: number
+          source_pages: Json
           support_status: Database["public"]["Enums"]["support_status"]
           title: string
           updated_at: string
           user_id: string
+          worked_examples: Json
         }
         Insert: {
           chapter_id?: string | null
+          content_language?: string | null
           course_id: string
           created_at?: string
           explanation_detailed?: string | null
           explanation_simple?: string | null
           explanation_standard?: string | null
+          figures?: Json
+          formulas?: Json
           id?: string
           is_completed?: boolean
           objective?: string | null
           position?: number
+          source_pages?: Json
           support_status?: Database["public"]["Enums"]["support_status"]
           title: string
           updated_at?: string
           user_id: string
+          worked_examples?: Json
         }
         Update: {
           chapter_id?: string | null
+          content_language?: string | null
           course_id?: string
           created_at?: string
           explanation_detailed?: string | null
           explanation_simple?: string | null
           explanation_standard?: string | null
+          figures?: Json
+          formulas?: Json
           id?: string
           is_completed?: boolean
           objective?: string | null
           position?: number
+          source_pages?: Json
           support_status?: Database["public"]["Enums"]["support_status"]
           title?: string
           updated_at?: string
           user_id?: string
+          worked_examples?: Json
         }
         Relationships: [
           {
@@ -898,6 +913,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          content_language: string
           created_at: string
           email: string | null
           full_name: string | null
@@ -907,8 +923,10 @@ export type Database = {
           study_prefs: Json
           theme: string
           updated_at: string
+          video_language: string
         }
         Insert: {
+          content_language?: string
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -918,8 +936,10 @@ export type Database = {
           study_prefs?: Json
           theme?: string
           updated_at?: string
+          video_language?: string
         }
         Update: {
+          content_language?: string
           created_at?: string
           email?: string | null
           full_name?: string | null
@@ -929,6 +949,7 @@ export type Database = {
           study_prefs?: Json
           theme?: string
           updated_at?: string
+          video_language?: string
         }
         Relationships: []
       }
@@ -1738,36 +1759,48 @@ export type Database = {
           end_ms: number
           file_id: string | null
           id: string
+          kind: string
+          narration: string | null
           page: number | null
           position: number
           start_ms: number
           text_segment: string | null
+          title: string | null
           user_id: string
           video_id: string
+          visual: string | null
         }
         Insert: {
           coordinates?: Json | null
           end_ms?: number
           file_id?: string | null
           id?: string
+          kind?: string
+          narration?: string | null
           page?: number | null
           position?: number
           start_ms?: number
           text_segment?: string | null
+          title?: string | null
           user_id: string
           video_id: string
+          visual?: string | null
         }
         Update: {
           coordinates?: Json | null
           end_ms?: number
           file_id?: string | null
           id?: string
+          kind?: string
+          narration?: string | null
           page?: number | null
           position?: number
           start_ms?: number
           text_segment?: string | null
+          title?: string | null
           user_id?: string
           video_id?: string
+          visual?: string | null
         }
         Relationships: [
           {
@@ -1790,31 +1823,40 @@ export type Database = {
         Row: {
           course_id: string
           created_at: string
+          duration_ms: number
           id: string
+          language: string
           lesson_id: string
           mode: string
           status: Database["public"]["Enums"]["job_status"]
           storage_path: string | null
+          title: string | null
           user_id: string
         }
         Insert: {
           course_id: string
           created_at?: string
+          duration_ms?: number
           id?: string
+          language?: string
           lesson_id: string
           mode?: string
           status?: Database["public"]["Enums"]["job_status"]
           storage_path?: string | null
+          title?: string | null
           user_id: string
         }
         Update: {
           course_id?: string
           created_at?: string
+          duration_ms?: number
           id?: string
+          language?: string
           lesson_id?: string
           mode?: string
           status?: Database["public"]["Enums"]["job_status"]
           storage_path?: string | null
+          title?: string | null
           user_id?: string
         }
         Relationships: [
