@@ -3,7 +3,7 @@
  * Returns page-wise text so every extracted block keeps a real page reference.
  */
 
-export type ExtractedDoc = { pages: string[]; pageCount: number; method: "pdf" | "text" };
+export type ExtractedDoc = { pages: string[]; pageCount: number; method: "pdf" | "text" | "office" };
 
 const TEXT_MIMES = [
   "text/plain",
@@ -13,12 +13,61 @@ const TEXT_MIMES = [
   "text/html",
 ];
 
+const OFFICE_RE = /\.(docx|pptx|xlsx)$/;
+
 export function isExtractable(mime: string, name: string): boolean {
   const lower = name.toLowerCase();
   if (mime === "application/pdf" || lower.endsWith(".pdf")) return true;
+  if (OFFICE_RE.test(lower)) return true;
   if (TEXT_MIMES.includes(mime)) return true;
   return /\.(txt|md|csv|json|htm|html)$/.test(lower);
 }
+
+function xmlToText(xml: string): string {
+  return xml
+    .replace(/<\/w:p>|<\/a:p>|<\/text:p>/g, "\n\n")
+    .replace(/<w:br\s*\/>|<a:br\s*\/>/g, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/[ \t]+/g, " ")
+    .trim();
+}
+
+/** Extracts text from Office Open XML packages (docx, pptx, xlsx) without native deps. */
+async function extractOffice(bytes: ArrayBuffer, lower: string): Promise<ExtractedDoc> {
+  const { unzipSync, strFromU8 } = await import("fflate");
+  const zip = unzipSync(new Uint8Array(bytes));
+  const names = Object.keys(zip);
+
+  let targets: string[] = [];
+  if (lower.endsWith(".docx")) {
+    targets = names.filter((n) => /^word\/(document|footnotes|endnotes)\d*\.xml$/.test(n));
+  } else if (lower.endsWith(".pptx")) {
+    targets = names
+      .filter((n) => /^ppt\/slides\/slide\d+\.xml$/.test(n))
+      .sort(
+        (a, b) =>
+          Number(a.match(/(\d+)\.xml$/)?.[1] ?? 0) - Number(b.match(/(\d+)\.xml$/)?.[1] ?? 0),
+      );
+  } else {
+    const shared = zip["xl/sharedStrings.xml"];
+    targets = shared ? ["xl/sharedStrings.xml"] : names.filter((n) => /^xl\/worksheets\//.test(n));
+  }
+
+  const parts = targets
+    .map((name) => xmlToText(strFromU8(zip[name]!)))
+    .filter((text) => text.length > 1);
+
+  if (parts.length === 0) throw new Error("NO_TEXT_EXTRACTED");
+
+  const pages = lower.endsWith(".pptx") ? parts : chunkPlainText(parts.join("\n\n"));
+  return { pages, pageCount: pages.length, method: "office" };
+}
+
 
 function chunkPlainText(text: string): string[] {
   const paragraphs = text.split(/\n\s*\n/);
