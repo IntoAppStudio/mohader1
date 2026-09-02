@@ -98,6 +98,8 @@ export async function extractDocument(
     return { pages, pageCount: totalPages, method: "pdf" };
   }
 
+  if (OFFICE_RE.test(lower)) return extractOffice(bytes, lower);
+
   if (isExtractable(mime, name)) {
     const decoded = new TextDecoder("utf-8").decode(bytes);
     const pages = chunkPlainText(decoded);
