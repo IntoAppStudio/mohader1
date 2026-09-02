@@ -80,9 +80,11 @@ function CourseDetail() {
       const userId = auth.user?.id;
       if (!userId) throw new Error("NO_SESSION");
 
+      let processedAny = false;
       for (const file of Array.from(files)) {
-        const safeName = file.name.replace(/[^\w.\-\u0600-\u06FF]+/g, "_");
-        const path = `${userId}/${courseId}/${crypto.randomUUID()}-${safeName}`;
+        // Storage keys must stay ASCII-safe; the real name is kept in the database.
+        const ext = file.name.toLowerCase().match(/\.[a-z0-9]+$/)?.[0] ?? "";
+        const path = `${userId}/${courseId}/${crypto.randomUUID()}${ext}`;
         const uploaded = await supabase.storage.from("sources").upload(path, file, {
           contentType: file.type || "application/octet-stream",
         });
@@ -102,9 +104,15 @@ function CourseDetail() {
           toast.error(`${file.name}: ${t("sources.unsupported")}`);
           continue;
         }
-        await process({ data: { fileId: registered.id } });
+        const result = await process({ data: { fileId: registered.id } });
+        if (result.status === "READY") processedAny = true;
         await refresh();
       }
+      if (processedAny) {
+        toast.success(t("course.building"));
+        await buildMutation.mutateAsync();
+      }
+
       toast.success(t("settings.saved"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("common.error"));
