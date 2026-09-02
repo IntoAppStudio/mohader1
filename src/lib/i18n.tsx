@@ -133,8 +133,9 @@ export const dict: Dict = {
   },
   "landing.faq.q3": { ar: "ما الصيغ المدعومة؟", en: "Which formats are supported?" },
   "landing.faq.a3": {
-    ar: "PDF، DOC/DOCX، PPT/PPTX، XLS/XLSX، CSV، TXT، RTF، والصور JPG/PNG/WEBP/HEIC.",
-    en: "PDF, DOC/DOCX, PPT/PPTX, XLS/XLSX, CSV, TXT, RTF, and JPG/PNG/WEBP/HEIC images.",
+    ar: "PDF، DOCX، PPTX، XLSX، TXT، MD، CSV، JSON، HTML. الملفات الممسوحة كصور تحتاج OCR وغير مدعومة حالياً.",
+    en: "PDF, DOCX, PPTX, XLSX, TXT, MD, CSV, JSON, HTML. Scanned image-only files need OCR and are not supported yet.",
+
   },
   "landing.cta.title": { ar: "ابدأ بمقررك الأول", en: "Start with your first course" },
 
