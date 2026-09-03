@@ -164,3 +164,55 @@ export function assessQuality(doc: ExtractedDoc, blocks: RawBlock[]) {
     needs_ocr: doc.method === "pdf" && charsPerPage < 120,
   };
 }
+
+export type SourceSegment = {
+  chapterTitle: string;
+  lessonTitle: string;
+  blockIds: number[];
+  pages: number[];
+};
+
+/**
+ * Groups ordered blocks into lesson segments that follow the file's OWN divisions.
+ * A section heading in the source starts a lesson; nothing is split further, so a
+ * twenty-page lesson stays one lesson. Tiny fragments are merged back into the
+ * lesson they belong to instead of becoming lessons of their own.
+ */
+export function segmentSource(
+  blocks: { section: string | null; page: number | null; original_text: string }[],
+  fallbackTitle: string,
+): SourceSegment[] {
+  const segments: SourceSegment[] = [];
+  let currentKey: string | null = null;
+
+  blocks.forEach((block, index) => {
+    const key = (block.section ?? "").trim() || fallbackTitle;
+    if (key !== currentKey || segments.length === 0) {
+      segments.push({ chapterTitle: fallbackTitle, lessonTitle: key, blockIds: [], pages: [] });
+      currentKey = key;
+    }
+    const segment = segments[segments.length - 1]!;
+    segment.blockIds.push(index);
+    if (block.page) segment.pages.push(block.page);
+  });
+
+  const charsOf = (segment: SourceSegment) =>
+    segment.blockIds.reduce((sum, id) => sum + (blocks[id]?.original_text.length ?? 0), 0);
+
+  // Merge fragments that are too small to be a real lesson in the source.
+  const merged: SourceSegment[] = [];
+  for (const segment of segments) {
+    const previous = merged[merged.length - 1];
+    if (previous && charsOf(segment) < 500) {
+      previous.blockIds.push(...segment.blockIds);
+      previous.pages.push(...segment.pages);
+      continue;
+    }
+    merged.push(segment);
+  }
+
+  return merged.map((segment) => ({
+    ...segment,
+    pages: [...new Set(segment.pages)].sort((a, b) => a - b),
+  }));
+}
