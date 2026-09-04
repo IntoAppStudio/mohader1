@@ -30,6 +30,7 @@ export const generateLessonVideo = createServerFn({ method: "POST" })
     const { assertVideoQuota } = await import("./quota.server");
     await assertVideoQuota(supabase, userId);
 
+    const { data: profile } = await supabase
       .from("profiles")
       .select("video_language")
       .eq("id", userId)
