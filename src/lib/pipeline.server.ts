@@ -418,12 +418,12 @@ export async function buildCourseContent(supabase: Db, userId: string, courseId:
           explanation_simple: pack.explanation_simple ?? null,
           explanation_standard: pack.explanation_standard ?? null,
           explanation_detailed: pack.explanation_detailed ?? null,
-          formulas: formulas as unknown as Database["public"]["Tables"]["lessons"]["Insert"]["formulas"],
-          figures: figures as unknown as Database["public"]["Tables"]["lessons"]["Insert"]["figures"],
+          formulas: formulas as unknown as Database["public"]["Tables"]["lessons"]["Row"]["formulas"],
+          figures: figures as unknown as Database["public"]["Tables"]["lessons"]["Row"]["figures"],
           worked_examples:
-            workedExamples as unknown as Database["public"]["Tables"]["lessons"]["Insert"]["worked_examples"],
+            workedExamples as unknown as Database["public"]["Tables"]["lessons"]["Row"]["worked_examples"],
           source_pages:
-            segment.pages as unknown as Database["public"]["Tables"]["lessons"]["Insert"]["source_pages"],
+            segment.pages as unknown as Database["public"]["Tables"]["lessons"]["Row"]["source_pages"],
           content_language: contentLanguage,
           support_status: "SUPPORTED",
           position: lessonPosition++,
@@ -475,7 +475,7 @@ export async function buildCourseContent(supabase: Db, userId: string, courseId:
             prompt: question.prompt,
             options,
             correct_answer: (question.correct_answer ??
-              null) as Database["public"]["Tables"]["questions"]["Insert"]["correct_answer"],
+              null) as Database["public"]["Tables"]["questions"]["Row"]["correct_answer"],
             explanation: question.explanation ?? null,
             difficulty: Math.min(3, Math.max(1, Math.round(question.difficulty ?? 2))),
             support_status: "SUPPORTED",
