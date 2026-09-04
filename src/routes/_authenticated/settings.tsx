@@ -93,7 +93,7 @@ function SettingsPage() {
             </CardHeader>
             <CardContent className="flex flex-wrap gap-4">
               <div className="space-y-1.5">
-                <Label>{t("common.language")}</Label>
+                <Label>{t("settings.siteLanguage")}</Label>
                 <Select
                   value={lang}
                   onValueChange={(value) => {
@@ -109,6 +109,47 @@ function SettingsPage() {
                     <SelectItem value="en">English</SelectItem>
                   </SelectContent>
                 </Select>
+                <p className="max-w-56 text-xs text-muted-foreground">{t("settings.siteLanguage.hint")}</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("settings.contentLanguage")}</Label>
+                <Select
+                  value={query.data?.profile?.content_language ?? "ar"}
+                  onValueChange={async (value) => {
+                    await saveProfile({ data: { contentLanguage: value } });
+                    await queryClient.invalidateQueries({ queryKey: ["bootstrap"] });
+                    toast.success(t("settings.saved"));
+                  }}
+                >
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ar">العربية</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="max-w-56 text-xs text-muted-foreground">{t("settings.contentLanguage.hint")}</p>
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t("settings.videoLanguage")}</Label>
+                <Select
+                  value={query.data?.profile?.video_language ?? "ar"}
+                  onValueChange={async (value) => {
+                    await saveProfile({ data: { videoLanguage: value } });
+                    await queryClient.invalidateQueries({ queryKey: ["bootstrap"] });
+                    toast.success(t("settings.saved"));
+                  }}
+                >
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ar">العربية</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="max-w-56 text-xs text-muted-foreground">{t("settings.videoLanguage.hint")}</p>
               </div>
               <div className="space-y-1.5">
                 <Label>{t("common.theme")}</Label>

@@ -3,13 +3,31 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((data: { fullName?: string; language?: string; theme?: string }) => data)
+  .inputValidator(
+    (data: {
+      fullName?: string;
+      language?: string;
+      theme?: string;
+      contentLanguage?: string;
+      videoLanguage?: string;
+    }) => data,
+  )
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    const patch: { full_name?: string | null; language?: string; theme?: string } = {};
+    const patch: {
+      full_name?: string | null;
+      language?: string;
+      theme?: string;
+      content_language?: string;
+      video_language?: string;
+    } = {};
     if (data.fullName !== undefined) patch.full_name = data.fullName.trim() || null;
     if (data.language === "ar" || data.language === "en") patch.language = data.language;
     if (data.theme && ["light", "dark", "system"].includes(data.theme)) patch.theme = data.theme;
+    if (data.contentLanguage === "ar" || data.contentLanguage === "en")
+      patch.content_language = data.contentLanguage;
+    if (data.videoLanguage === "ar" || data.videoLanguage === "en")
+      patch.video_language = data.videoLanguage;
     const { error } = await supabase.from("profiles").update(patch).eq("id", userId);
     if (error) throw new Error("PROFILE_UPDATE_FAILED");
     return { ok: true };

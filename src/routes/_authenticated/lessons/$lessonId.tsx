@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Clapperboard, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
@@ -12,6 +12,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SourceRefs, type SourceRef } from "@/components/source-refs";
+import { FormulaCard, type LessonFormula } from "@/components/formula-card";
+import { LessonVideo, type VideoScene } from "@/components/lesson-video";
+import { generateLessonVideo, getLessonVideo } from "@/lib/video.functions";
 import { answerQuestion, getLesson, logStudySession, setLessonCompleted } from "@/lib/study.functions";
 import { useI18n } from "@/lib/i18n";
 
@@ -43,6 +46,9 @@ function LessonPage() {
   const complete = useServerFn(setLessonCompleted);
   const answer = useServerFn(answerQuestion);
   const logSession = useServerFn(logStudySession);
+  const fetchVideo = useServerFn(getLessonVideo);
+  const makeVideo = useServerFn(generateLessonVideo);
+  const [videoPending, setVideoPending] = useState(false);
 
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [feedback, setFeedback] = useState<Record<string, Feedback>>({});
@@ -50,6 +56,10 @@ function LessonPage() {
 
   const query = useQuery({ queryKey: ["lesson", lessonId], queryFn: () => fetchLesson({ data: { lessonId } }) });
   const courseId = query.data?.lesson.course_id;
+  const videoQuery = useQuery({
+    queryKey: ["lesson-video", lessonId],
+    queryFn: () => fetchVideo({ data: { lessonId } }),
+  });
 
   useEffect(() => {
     if (!courseId) return;
@@ -69,6 +79,19 @@ function LessonPage() {
   }
 
   const { lesson, course, summary, questions, references } = query.data;
+  const formulas = (Array.isArray(lesson.formulas) ? lesson.formulas : []) as LessonFormula[];
+  const figures = (Array.isArray(lesson.figures) ? lesson.figures : []) as {
+    caption?: string;
+    description?: string | null;
+    pages?: number[];
+  }[];
+  const examples = (Array.isArray(lesson.worked_examples) ? lesson.worked_examples : []) as {
+    title?: string | null;
+    problem?: string;
+    steps?: string[];
+    answer?: string | null;
+    pages?: number[];
+  }[];
 
   return (
     <AppShell
@@ -129,6 +152,105 @@ function LessonPage() {
           </Card>
         ) : null}
 
+        {figures.length > 0 ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{t("lesson.figures")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm leading-relaxed">
+              {figures.map((figure, index) => (
+                <div key={index} className="rounded-md border border-border bg-surface p-3">
+                  <p className="font-medium">{figure.caption}</p>
+                  {figure.description ? (
+                    <p className="mt-1 text-muted-foreground">{figure.description}</p>
+                  ) : null}
+                  {figure.pages?.length ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("lesson.pages")}: {figure.pages.join(", ")}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        ) : null}
+
+        {examples.length > 0 ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{t("lesson.examples")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm leading-relaxed">
+              {examples.map((example, index) => (
+                <div key={index} className="rounded-md border border-border bg-surface p-3">
+                  {example.title ? <p className="font-medium">{example.title}</p> : null}
+                  {example.problem ? (
+                    <p className="mt-1">
+                      <span className="text-muted-foreground">{t("lesson.example.problem")}: </span>
+                      {example.problem}
+                    </p>
+                  ) : null}
+                  {example.steps?.length ? (
+                    <div className="mt-2">
+                      <p className="text-muted-foreground">{t("lesson.example.steps")}</p>
+                      <ol className="mt-1 list-decimal space-y-1 ps-5">
+                        {example.steps.map((step, i) => (
+                          <li key={i}>{step}</li>
+                        ))}
+                      </ol>
+                    </div>
+                  ) : null}
+                  {example.answer ? (
+                    <p className="mt-2 font-medium">
+                      {t("lesson.example.answer")}: {example.answer}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        ) : null}
+
+        <Card>
+          <CardHeader className="flex-row items-center justify-between gap-3 pb-2">
+            <CardTitle className="text-sm">{t("lesson.video")}</CardTitle>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={videoPending}
+              onClick={async () => {
+                setVideoPending(true);
+                try {
+                  await makeVideo({ data: { lessonId } });
+                  await queryClient.invalidateQueries({ queryKey: ["lesson-video", lessonId] });
+                } catch {
+                  toast.error(t("common.error"));
+                } finally {
+                  setVideoPending(false);
+                }
+              }}
+            >
+              {videoPending ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Clapperboard className="size-4" aria-hidden="true" />
+              )}
+              {videoPending ? t("lesson.video.generating") : t("lesson.video.generate")}
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {videoQuery.data?.video && (videoQuery.data.scenes?.length ?? 0) > 0 ? (
+              <LessonVideo
+                scenes={videoQuery.data.scenes as VideoScene[]}
+                language={videoQuery.data.video.language}
+                title={videoQuery.data.video.title}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">{t("lesson.video.empty")}</p>
+            )}
+          </CardContent>
+        </Card>
+
         <section>
           <h2 className="rule-heading font-display text-lg font-bold">{t("lesson.questions")}</h2>
           {questions.length === 0 ? (
@@ -143,7 +265,7 @@ function LessonPage() {
                   <li key={question.id} className="rounded-lg border border-border bg-card p-4">
                     <div className="flex flex-wrap items-start justify-between gap-2">
                       <p className="text-sm font-medium">{question.prompt}</p>
-                      <Badge variant="outline">{question.type}</Badge>
+                      <Badge variant="outline">{t(`q.type.${question.type}`)}</Badge>
                     </div>
 
                     <div className="mt-3 space-y-2">
@@ -226,6 +348,8 @@ function LessonPage() {
             </ul>
           )}
         </section>
+
+        <FormulaCard formulas={formulas} lessonTitle={lesson.title} />
 
         {references.length > 0 ? (
           <Card>
