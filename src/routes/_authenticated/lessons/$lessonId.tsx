@@ -349,6 +349,8 @@ function LessonPage() {
           )}
         </section>
 
+        <FormulaCard formulas={formulas} lessonTitle={lesson.title} />
+
         {references.length > 0 ? (
           <Card>
             <CardHeader className="flex-row items-center justify-between gap-3 pb-2">
