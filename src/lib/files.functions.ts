@@ -18,6 +18,8 @@ export const registerSourceFile = createServerFn({ method: "POST" })
     const { assertCourseOwner } = await import("./db.server");
     const course = await assertCourseOwner(supabase, data.courseId);
     if (!data.storagePath.startsWith(`${userId}/`)) throw new Error("INVALID_STORAGE_PATH");
+    const { assertFileQuota } = await import("./quota.server");
+    await assertFileQuota(supabase, userId, data.courseId, Number(data.sizeBytes) || 0);
 
     const { isExtractable } = await import("./extract.server");
     const supported = isExtractable(data.mimeType, data.originalName);
