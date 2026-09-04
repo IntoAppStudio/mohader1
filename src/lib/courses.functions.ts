@@ -9,7 +9,7 @@ export const getBootstrap = createServerFn({ method: "GET" })
     const workspaceId = await ensureWorkspace(supabase, userId);
 
     const [profile, courses, files, progress, subscription, plans] = await Promise.all([
-      supabase.from("profiles").select("id, full_name, email, language, theme").eq("id", userId).maybeSingle(),
+      supabase.from("profiles").select("id, full_name, email, language, theme, content_language, video_language").eq("id", userId).maybeSingle(),
       supabase
         .from("courses")
         .select("id, title, subject, description, exam_date, is_built, built_at, created_at, updated_at")

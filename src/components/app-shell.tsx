@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { BookOpen, LayoutDashboard, Languages, LogOut, Moon, Settings, Sun } from "lucide-react";
 import type { ReactNode } from "react";
 
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
@@ -75,7 +76,10 @@ export function AppShell({
 
       <div className="md:ms-60">
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-border bg-background/90 px-4 backdrop-blur md:px-8">
-          <h1 className="truncate font-display text-base font-bold md:text-lg">{title}</h1>
+          <div className="flex min-w-0 items-center gap-2">
+            <BackButton />
+            <h1 className="truncate font-display text-base font-bold md:text-lg">{title}</h1>
+          </div>
           <div className="flex items-center gap-2">{actions}</div>
         </header>
         <main className="px-4 pb-28 pt-6 md:px-8 md:pb-12">{children}</main>
