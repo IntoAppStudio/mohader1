@@ -27,6 +27,9 @@ export const generateLessonVideo = createServerFn({ method: "POST" })
   .inputValidator((data: { lessonId: string; language?: "ar" | "en" }) => data)
   .handler(async ({ context, data }) => {
     const { supabase, userId } = context;
+    const { assertVideoQuota } = await import("./quota.server");
+    await assertVideoQuota(supabase, userId);
+
     const { data: profile } = await supabase
       .from("profiles")
       .select("video_language")

@@ -59,6 +59,8 @@ export const createCourse = createServerFn({ method: "POST" })
     const title = data.title.trim();
     if (title.length < 2) throw new Error("TITLE_REQUIRED");
     const { ensureWorkspace } = await import("./db.server");
+    const { assertCourseQuota } = await import("./quota.server");
+    await assertCourseQuota(supabase, userId);
     const workspaceId = await ensureWorkspace(supabase, userId);
 
     const { data: course, error } = await supabase
@@ -231,6 +233,8 @@ export const buildCourse = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { assertCourseOwner } = await import("./db.server");
     await assertCourseOwner(supabase, data.courseId);
+    const { assertGenerationQuota } = await import("./quota.server");
+    await assertGenerationQuota(supabase, userId);
     const { buildCourseContent } = await import("./pipeline.server");
     try {
       return await buildCourseContent(supabase, userId, data.courseId);
