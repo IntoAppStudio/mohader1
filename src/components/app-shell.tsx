@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { BookOpen, LayoutDashboard, Languages, LogOut, Moon, Settings, Sun } from "lucide-react";
 import type { ReactNode } from "react";
 
@@ -23,9 +23,11 @@ export function AppShell({
   title: string;
   actions?: ReactNode;
 }) {
-  const { t, lang, setLang } = useI18n();
+  const { t, lang, setLang, canTranslate, translated, toggleTranslate } = useI18n();
   const { resolved, setMode } = useTheme();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isHome = pathname === "/dashboard";
 
   const signOut = async () => {
     await supabase.auth.signOut();
@@ -77,10 +79,30 @@ export function AppShell({
       <div className="md:ms-60">
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-3 border-b border-border bg-background/90 px-4 backdrop-blur md:px-8">
           <div className="flex min-w-0 items-center gap-2">
-            <BackButton />
+            {isHome ? null : <BackButton />}
             <h1 className="truncate font-display text-base font-bold md:text-lg">{title}</h1>
           </div>
-          <div className="flex items-center gap-2">{actions}</div>
+          <div className="flex items-center gap-2">
+            {canTranslate ? (
+              <Button variant="outline" size="sm" onClick={toggleTranslate}>
+                <Languages className="size-4" aria-hidden="true" />
+                {translated ? t("common.original") : t("common.translate")}
+              </Button>
+            ) : null}
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={resolved === "dark" ? t("common.light") : t("common.dark")}
+              onClick={() => setMode(resolved === "dark" ? "light" : "dark")}
+            >
+              {resolved === "dark" ? (
+                <Sun className="size-4" aria-hidden="true" />
+              ) : (
+                <Moon className="size-4" aria-hidden="true" />
+              )}
+            </Button>
+            {actions}
+          </div>
         </header>
         <main className="px-4 pb-28 pt-6 md:px-8 md:pb-12">{children}</main>
       </div>

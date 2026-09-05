@@ -399,6 +399,44 @@ export const dict: Dict = {
     ar: "حذف الحساب يزيل ملفاتك ومقرراتك وتقدمك نهائياً.",
     en: "Deleting your account permanently removes your files, courses and progress.",
   },
+
+  "common.translate": { ar: "ترجم", en: "Translate" },
+  "common.original": { ar: "المحتوى الأصلي", en: "Original content" },
+
+  "settings.password": { ar: "كلمة المرور", en: "Password" },
+  "settings.password.new": { ar: "كلمة مرور جديدة", en: "New password" },
+  "settings.password.confirm": { ar: "تأكيد كلمة المرور", en: "Confirm password" },
+  "settings.password.change": { ar: "تغيير كلمة المرور", en: "Change password" },
+  "settings.password.mismatch": {
+    ar: "كلمتا المرور غير متطابقتين.",
+    en: "The two passwords do not match.",
+  },
+  "settings.password.short": {
+    ar: "كلمة المرور يجب أن تكون ٨ أحرف على الأقل.",
+    en: "The password must be at least 8 characters.",
+  },
+  "settings.password.updated": { ar: "تم تحديث كلمة المرور.", en: "Password updated." },
+
+  "settings.plan.change": { ar: "تغيير الخطة", en: "Change plan" },
+  "settings.plan.subscribe": { ar: "اشترك", en: "Subscribe" },
+  "settings.plan.currentBadge": { ar: "خطتك الحالية", en: "Current plan" },
+  "settings.plan.pay": { ar: "الدفع", en: "Payment" },
+  "settings.plan.payHint": {
+    ar: "الدفع الإلكتروني قيد التهيئة. اختر خطتك وسنكمل الدفع عند تفعيل بوابة الدفع.",
+    en: "Online payment is being set up. Choose your plan and we will complete payment once the payment gateway is live.",
+  },
+  "settings.plan.selected": {
+    ar: "تم تسجيل اختيارك للخطة.",
+    en: "Your plan selection was recorded.",
+  },
+
+  "dash.quickActions": { ar: "إجراءات سريعة", en: "Quick actions" },
+  "dash.action.newCourse": { ar: "مقرر جديد", en: "New course" },
+  "dash.action.courses": { ar: "مقرراتي", en: "My courses" },
+  "dash.action.settings": { ar: "الإعدادات", en: "Settings" },
+  "dash.action.plan": { ar: "الاشتراك", en: "Subscription" },
+  "dash.continue": { ar: "أكمل الدراسة", en: "Continue studying" },
+  "dash.overview": { ar: "نظرة عامة", en: "Overview" },
 };
 
 type Ctx = {
@@ -406,6 +444,10 @@ type Ctx = {
   dir: "rtl" | "ltr";
   setLang: (l: Lang) => void;
   t: (key: keyof typeof dict | string) => string;
+  /** True when an English user asked for an on-the-fly Arabic translation. */
+  translated: boolean;
+  canTranslate: boolean;
+  toggleTranslate: () => void;
 };
 
 const I18nContext = createContext<Ctx | null>(null);
@@ -413,39 +455,54 @@ const STORAGE_KEY = "mahader.lang";
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("ar");
+  const [translated, setTranslated] = useState(false);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored === "ar" || stored === "en") setLangState(stored);
   }, []);
 
+  const effective: Lang = lang === "en" && translated ? "ar" : lang;
+
   useEffect(() => {
-    const dir = lang === "ar" ? "rtl" : "ltr";
-    document.documentElement.setAttribute("lang", lang);
+    const dir = effective === "ar" ? "rtl" : "ltr";
+    document.documentElement.setAttribute("lang", effective);
     document.documentElement.setAttribute("dir", dir);
-  }, [lang]);
+  }, [effective]);
 
   const setLang = useCallback((l: Lang) => {
     setLangState(l);
+    setTranslated(false);
     window.localStorage.setItem(STORAGE_KEY, l);
   }, []);
+
+  const toggleTranslate = useCallback(() => setTranslated((v) => !v), []);
 
   const t = useCallback(
     (key: string) => {
       const entry = dict[key];
       if (!entry) return key;
-      return entry[lang];
+      return entry[effective];
     },
-    [lang],
+    [effective],
   );
 
   const value = useMemo<Ctx>(
-    () => ({ lang, dir: lang === "ar" ? "rtl" : "ltr", setLang, t }),
-    [lang, setLang, t],
+    () => ({
+      lang,
+      dir: effective === "ar" ? "rtl" : "ltr",
+      setLang,
+      t,
+      translated,
+      canTranslate: lang === "en",
+      toggleTranslate,
+    }),
+    [lang, effective, setLang, t, translated, toggleTranslate],
   );
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
+
 
 export function useI18n(): Ctx {
   const ctx = useContext(I18nContext);

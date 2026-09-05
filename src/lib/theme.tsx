@@ -20,13 +20,15 @@ function systemPrefersDark() {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [mode, setModeState] = useState<ThemeMode>("system");
+  // Light is the default so the app never flashes from light to dark on load.
+  const [mode, setModeState] = useState<ThemeMode>("light");
   const [resolved, setResolved] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
     if (stored === "light" || stored === "dark" || stored === "system") setModeState(stored);
   }, []);
+
 
   useEffect(() => {
     const apply = () => {

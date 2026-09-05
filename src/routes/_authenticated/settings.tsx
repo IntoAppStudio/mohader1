@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Download } from "lucide-react";
+import { CreditCard, Download } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
@@ -44,6 +44,9 @@ function SettingsPage() {
 
   const [fullName, setFullName] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
   const query = useQuery({ queryKey: ["bootstrap"], queryFn: () => fetchBootstrap() });
 
   useEffect(() => {
@@ -175,18 +178,104 @@ function SettingsPage() {
 
           <Card>
             <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{t("settings.password")}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="new-password">{t("settings.password.new")}</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="max-w-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="confirm-password">{t("settings.password.confirm")}</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="max-w-xs"
+                />
+              </div>
+              <Button
+                variant="outline"
+                disabled={savingPassword}
+                onClick={async () => {
+                  if (newPassword.length < 8) {
+                    toast.error(t("settings.password.short"));
+                    return;
+                  }
+                  if (newPassword !== confirmPassword) {
+                    toast.error(t("settings.password.mismatch"));
+                    return;
+                  }
+                  setSavingPassword(true);
+                  const { error } = await supabase.auth.updateUser({ password: newPassword });
+                  setSavingPassword(false);
+                  if (error) {
+                    toast.error(t("common.error"));
+                    return;
+                  }
+                  setNewPassword("");
+                  setConfirmPassword("");
+                  toast.success(t("settings.password.updated"));
+                }}
+              >
+                {t("settings.password.change")}
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
               <CardTitle className="text-sm">{t("settings.plan")}</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+            <CardContent className="space-y-4 text-sm">
               <p>
                 {t("settings.plan.current")}:{" "}
                 <span className="font-medium">
                   {plan ? (lang === "ar" ? plan.name_ar : plan.name_en) : t("settings.plan.free")}
                 </span>
               </p>
-              <p className="text-muted-foreground">{t("settings.billingPending")}</p>
+              <ul className="grid gap-3 sm:grid-cols-2">
+                {(query.data?.plans ?? []).map((item) => {
+                  const isCurrent = item.id === plan?.id;
+                  return (
+                    <li
+                      key={item.id}
+                      className={`rounded-lg border p-4 ${isCurrent ? "border-primary" : "border-border"}`}
+                    >
+                      <p className="font-medium">{lang === "ar" ? item.name_ar : item.name_en}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {item.price_monthly} {item.currency} · {t("landing.pricing.monthly")}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.price_yearly} {item.currency} · {t("landing.pricing.yearly")}
+                      </p>
+                      <Button
+                        className="mt-3"
+                        size="sm"
+                        variant={isCurrent ? "secondary" : "default"}
+                        disabled={isCurrent}
+                        onClick={() => toast.info(t("settings.plan.payHint"))}
+                      >
+                        <CreditCard className="size-4" aria-hidden="true" />
+                        {isCurrent ? t("settings.plan.currentBadge") : t("settings.plan.change")}
+                      </Button>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="text-muted-foreground">{t("settings.plan.payHint")}</p>
             </CardContent>
           </Card>
+
 
           <Card>
             <CardHeader className="pb-2">
