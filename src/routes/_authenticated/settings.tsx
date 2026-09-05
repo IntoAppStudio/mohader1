@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
-import { Download } from "lucide-react";
+import { CreditCard, Download } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app-shell";
@@ -44,6 +44,9 @@ function SettingsPage() {
 
   const [fullName, setFullName] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
   const query = useQuery({ queryKey: ["bootstrap"], queryFn: () => fetchBootstrap() });
 
   useEffect(() => {
