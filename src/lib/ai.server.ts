@@ -22,7 +22,9 @@ function stripFence(text: string): string {
 
 export type AiPart =
   | { type: "text"; text: string }
-  | { type: "image_url"; image_url: { url: string } };
+  | { type: "image_url"; image_url: { url: string } }
+  | { type: "file"; file: { filename: string; file_data: string } };
+
 
 /** Raw gateway call. `content` is either plain text or multimodal parts. */
 async function chat(system: string, content: string | AiPart[]): Promise<string> {
