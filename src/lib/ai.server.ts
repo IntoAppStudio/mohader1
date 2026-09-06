@@ -5,7 +5,8 @@
  */
 
 const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
+const MODEL = "google/gemini-3.7-flash";
+
 
 export class AiUnavailableError extends Error {}
 
