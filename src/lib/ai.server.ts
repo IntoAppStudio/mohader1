@@ -88,6 +88,24 @@ export async function aiJsonWithImages<T>(
   return parseJson<T>(await chat(system, parts));
 }
 
+/** JSON answer for a request that includes a whole document file (PDF figure reading). */
+export async function aiJsonWithFile<T>(
+  system: string,
+  text: string,
+  file: { filename: string; mime: string; base64: string },
+): Promise<T> {
+  const parts: AiPart[] = [
+    { type: "text", text },
+    {
+      type: "file",
+      file: { filename: file.filename, file_data: `data:${file.mime};base64,${file.base64}` },
+    },
+  ];
+  return parseJson<T>(await chat(system, parts));
+}
+
+
+
 
 export const SOURCE_BOUND_SYSTEM = [
   "You build study material strictly from the supplied source blocks of one single course.",
