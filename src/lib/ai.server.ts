@@ -20,7 +20,12 @@ function stripFence(text: string): string {
   return body.slice(start, end + 1);
 }
 
-export async function aiJson<T>(system: string, user: string): Promise<T> {
+export type AiPart =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string } };
+
+/** Raw gateway call. `content` is either plain text or multimodal parts. */
+async function chat(system: string, content: string | AiPart[]): Promise<string> {
   const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new AiUnavailableError("LOVABLE_API_KEY is not configured");
 
@@ -31,7 +36,7 @@ export async function aiJson<T>(system: string, user: string): Promise<T> {
       model: MODEL,
       messages: [
         { role: "system", content: system },
-        { role: "user", content: user },
+        { role: "user", content },
       ],
     }),
   });
@@ -47,9 +52,12 @@ export async function aiJson<T>(system: string, user: string): Promise<T> {
   const payload = (await response.json()) as {
     choices?: { message?: { content?: string } }[];
   };
-  const content = payload.choices?.[0]?.message?.content;
-  if (!content) throw new AiUnavailableError("EMPTY_RESPONSE");
+  const text = payload.choices?.[0]?.message?.content;
+  if (!text) throw new AiUnavailableError("EMPTY_RESPONSE");
+  return text;
+}
 
+function parseJson<T>(content: string): T {
   try {
     return JSON.parse(stripFence(content)) as T;
   } catch {
@@ -57,6 +65,27 @@ export async function aiJson<T>(system: string, user: string): Promise<T> {
     throw new AiUnavailableError("UNPARSABLE_RESPONSE");
   }
 }
+
+export async function aiJson<T>(system: string, user: string): Promise<T> {
+  return parseJson<T>(await chat(system, user));
+}
+
+/** JSON answer for a request that includes images (figures, diagrams, scanned pages). */
+export async function aiJsonWithImages<T>(
+  system: string,
+  text: string,
+  images: { mime: string; base64: string }[],
+): Promise<T> {
+  const parts: AiPart[] = [
+    { type: "text", text },
+    ...images.map((image) => ({
+      type: "image_url" as const,
+      image_url: { url: `data:${image.mime};base64,${image.base64}` },
+    })),
+  ];
+  return parseJson<T>(await chat(system, parts));
+}
+
 
 export const SOURCE_BOUND_SYSTEM = [
   "You build study material strictly from the supplied source blocks of one single course.",
