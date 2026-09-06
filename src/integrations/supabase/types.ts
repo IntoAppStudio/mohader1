@@ -524,6 +524,7 @@ export type Database = {
           created_at: string
           current_version: number
           error_message: string | null
+          extraction_report: Json
           id: string
           mime_type: string
           original_name: string
@@ -543,6 +544,7 @@ export type Database = {
           created_at?: string
           current_version?: number
           error_message?: string | null
+          extraction_report?: Json
           id?: string
           mime_type: string
           original_name: string
@@ -562,6 +564,7 @@ export type Database = {
           created_at?: string
           current_version?: number
           error_message?: string | null
+          extraction_report?: Json
           id?: string
           mime_type?: string
           original_name?: string
@@ -658,6 +661,7 @@ export type Database = {
       }
       lessons: {
         Row: {
+          accuracy: Json
           chapter_id: string | null
           content_language: string | null
           course_id: string
@@ -679,6 +683,7 @@ export type Database = {
           worked_examples: Json
         }
         Insert: {
+          accuracy?: Json
           chapter_id?: string | null
           content_language?: string | null
           course_id: string
@@ -700,6 +705,7 @@ export type Database = {
           worked_examples?: Json
         }
         Update: {
+          accuracy?: Json
           chapter_id?: string | null
           content_language?: string | null
           course_id?: string
@@ -1273,6 +1279,88 @@ export type Database = {
             columns: ["resolved_block"]
             isOneToOne: false
             referencedRelation: "content_blocks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      source_media: {
+        Row: {
+          caption: string | null
+          confidence: number | null
+          content_block_id: string | null
+          course_id: string
+          created_at: string
+          file_id: string
+          file_version: number
+          id: string
+          kind: string
+          mime_type: string
+          page: number | null
+          position: number
+          storage_path: string | null
+          updated_at: string
+          user_id: string
+          vision_status: string
+          vision_text: string | null
+        }
+        Insert: {
+          caption?: string | null
+          confidence?: number | null
+          content_block_id?: string | null
+          course_id: string
+          created_at?: string
+          file_id: string
+          file_version?: number
+          id?: string
+          kind?: string
+          mime_type?: string
+          page?: number | null
+          position?: number
+          storage_path?: string | null
+          updated_at?: string
+          user_id: string
+          vision_status?: string
+          vision_text?: string | null
+        }
+        Update: {
+          caption?: string | null
+          confidence?: number | null
+          content_block_id?: string | null
+          course_id?: string
+          created_at?: string
+          file_id?: string
+          file_version?: number
+          id?: string
+          kind?: string
+          mime_type?: string
+          page?: number | null
+          position?: number
+          storage_path?: string | null
+          updated_at?: string
+          user_id?: string
+          vision_status?: string
+          vision_text?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "source_media_content_block_id_fkey"
+            columns: ["content_block_id"]
+            isOneToOne: false
+            referencedRelation: "content_blocks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_media_course_id_fkey"
+            columns: ["course_id"]
+            isOneToOne: false
+            referencedRelation: "courses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_media_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "files"
             referencedColumns: ["id"]
           },
         ]
